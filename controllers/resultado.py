@@ -104,7 +104,7 @@ def reporte():
               orderby= ~suma_votos | l.idx_fila
              )
     
-    return msa._lastsql   # muestro query para depuración
+    ##return msa._lastsql   # muestro query para depuración
     
     # Calculo el total y preparo datos para dhont
 
@@ -256,8 +256,3 @@ def calcula_dhont_electos(votos, total, piso, bancas, candidatos=None):
         resultado[None] = bancas
     
     return (resultado, electos)
-
-
-
-
-
