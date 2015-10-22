@@ -10,10 +10,13 @@ def listado():
     
     # preparo ubicaciones a elegir: [(id_ubicacion, descripcion)] 
     # solo provincias (para listar departamentos dentro de ellas)
-    ubicaciones = msa(msa.ubicaciones.clase == CLASES[-2]).select()
-    ubicaciones = sorted([(row.id_ubicacion, 
-                           "%s (%s)" % (row.descripcion, row.clase)) 
-                          for row in ubicaciones]+[(None, "")])
+    dpto = msa.ubicaciones
+    prov = msa.ubicaciones.with_alias("provincia")
+    q = dpto.clase=="Departamento"
+    q &= dpto.id_ubicacion_padre == prov.id_ubicacion
+    ubicaciones = msa(q).select(dpto.id_ubicacion, dpto.descripcion, prov.descripcion.with_alias("provincia"))
+    ubicaciones = sorted([(row.ubicaciones.id_ubicacion, "%s (%s)" % (row.ubicaciones.descripcion, row.provincia)) for row in ubicaciones],
+                         key= lambda x: x[1])
 
     form = SQLFORM.factory(
         Field("id_ubicacion", "string", 
@@ -45,7 +48,9 @@ def listado():
         # listo, q es la consulta base que voy agregando condiciones
         q = msa.ubicaciones.id_ubicacion==msa.planillas.id_ubicacion
         if session.id_ubicacion:
-            q &=  msa.ubicaciones.id_ubicacion_padre == session.id_ubicacion
+            circuito = msa.ubicaciones.with_alias("circuito")
+            q &= circuito.id_ubicacion_padre == session.id_ubicacion
+            q &=  msa.ubicaciones.id_ubicacion_padre == circuito.id_ubicacion
         if session.id_estado:
             q &= msa.planillas.id_estado==session.id_estado
 
@@ -222,4 +227,3 @@ def thumbnail():
     response.headers['Content-Type']='image/png'
     # devuelvo los datos de la imagen
     return png
-

@@ -3,9 +3,10 @@
 def index():
     "Página inical de búsqueda"
     # preparo ubicaciones a elegir: [(id_ubicacion, descripcion)]
-    ubicaciones = msa(msa.ubicaciones.id_ubicacion!=None).select()
+    ubicaciones = msa(msa.ubicaciones.clase.contains(["Pais", "Departamento", "Provincia"])).select()
     ubicaciones = sorted([(row.id_ubicacion, "%s (%s)" % (row.descripcion, row.clase)) 
-                          for row in ubicaciones] + [(None, "")])
+                          for row in ubicaciones] + [(None, "")], 
+                         key=lambda x: (x[0]*1000 if x[0] and x[0] < 1000 else x[0]))
 
     # busco todos las cargos y armo un diccionario {id_cargo: descripcion}
     cargos = dict([(c.id_cargo, c.descripcion) 
