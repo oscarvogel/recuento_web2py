@@ -1,11 +1,12 @@
 recuento_web2py
 ===============
 
-Aplicación web para procesamiento de datos electorales
+Aplicación web -software libre (AGPLv3)- para procesamiento de datos púbilicos electorales (formato abierto):
 
  * [DEMO Recuento 2007](http://www.web2py.com.ar/recuento2007)
  * [DEMO Recuento 2013 PASO](http://www.web2py.com.ar/recuento2013paso)
  * [DEMO Recuento 2015 PASO](http://www.web2py.com.ar/recuento2015paso) ***nuevo!***
+ * [DEMO Recuento 2015 Generales](http://www.web2py.com.ar/recuento2015paso) ***nuevo!*** (tentativo y colaborativo)
 
 Instalación:
 ------------
