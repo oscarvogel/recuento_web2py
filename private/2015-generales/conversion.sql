@@ -43,4 +43,14 @@ DELETE FROM listas WHERE id_partido != id_lista and id_partido IS NOT NULL;
 UPDATE planillas_det SET id_lista = 135 WHERE id_lista = 145;
 UPDATE carg_list_ubic SET id_lista = 135 WHERE id_lista = 145;
 
+/* totalizar votos por listas internas para pruebas */ 
+
+/*
+UPDATE planillas_det SET votos_definitivos=s.suma FROM 
+    (SELECT id_ubicacion, id_partido, sum(votos) AS suma 
+     FROM tmp.municipales NATURAL JOIN tmp.mesas 
+     INNER JOIN listas ON tmp.municipales.codigo_partido=listas.id_lista 
+     GROUP BY id_ubicacion, id_partido) AS S 
+     WHERE s.id_ubicacion=id_ubicacion AND id_cargo=7 AND id_lista=s.id_partido;
+*/
 COMMIT;
