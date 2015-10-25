@@ -131,7 +131,7 @@ def reporte():
     # Calculo el dhont
     dhont_total = sum(dhont_votos.values())
     dhont_piso = 0.05
-    dhont_bancas = max([len(cands) for cands in dhont_candidatos]) or 0
+    dhont_bancas = max([len(cands) for cands in dhont_candidatos.values()]) or 0
 
     if dhont_total:
         tabla_dhont, dhont_electos = calcula_dhont_electos(dhont_votos, dhont_total, dhont_piso, 
