@@ -38,4 +38,9 @@ INSERT INTO planillas_det (id_planilla, id_cargo, id_lista)
 
 DELETE FROM listas WHERE id_partido != id_lista and id_partido IS NOT NULL;
 
+/* unificar listas provinciales */
+
+UPDATE planillas_det SET id_lista = 135 WHERE id_lista = 145;
+UPDATE carg_list_ubic SET id_lista = 135 WHERE id_lista = 145;
+
 COMMIT;
