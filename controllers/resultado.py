@@ -119,19 +119,23 @@ def reporte():
         if registro.nro_lista: # si no es blanco, suma al total 
             dhont_votos[id_lista] = votos
             # nesesito nombre y sexo de los catidatos!
+            q = msa.candidatos.id_lista == id_lista
+            q &= msa.candidatos.id_cargo == id_cargo
+            q &= msa.candidatos.id_ubicacion == id_ubicacion
+            q &= msa.candidatos.categoria == "Consejal Titular"
+
             dhont_candidatos[id_lista] = [
-                (id_lista,'%d: %s, %s Sexo: %s' % (r.termino, r.apellidos, 
-                                                   r.nombres, r.sexo), r.sexo)
-                 for r in []]
-            
+                (id_lista,'%d: %s Sexo: %s' % (i+1, r.nombre, r.sexo), r.sexo)
+                 for i, r in enumerate(msa(q).select(orderby=msa.candidatos.idx_fila))]
+
     # Calculo el dhont
     dhont_total = sum(dhont_votos.values())
     dhont_piso = 0.05
-    dhont_bancas = 0 #len(dhont_candidatos.values()[0])
-    dhont_electos = calcula_dhont_electos(dhont_votos, dhont_total, dhont_piso, 
-                                          dhont_bancas, dhont_candidatos)
-    if dhont_electos:
-        tabla_dhont, dhont_electos = dhont_electos
+    dhont_bancas = max([len(cands) for cands in dhont_candidatos]) or 0
+
+    if dhont_total:
+        tabla_dhont, dhont_electos = calcula_dhont_electos(dhont_votos, dhont_total, dhont_piso, 
+                                              dhont_bancas, dhont_candidatos)
     else:
         tabla_dhont, dhont_electos = [],[] # no ha datos disponibles
 
