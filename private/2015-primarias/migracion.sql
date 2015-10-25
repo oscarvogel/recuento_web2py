@@ -20,7 +20,13 @@ INSERT INTO
   FROM tmp.partidos 
   WHERE codigo_partido NOT IN (9001, 9002, 9007)
   ORDER BY agrupacion;
-  
+
+/* ajustar nombres de listas vacios */
+UPDATE tmp.partidos SET lista_interna = NULL WHERE trim(lista_interna) = '';
+/* eliminar palabra LISTA para que se lea mejor descripcion_corta (131) */
+UPDATE tmp.partidos SET lista_interna = SUBSTR(lista_interna, 7, 999) 
+                    WHERE lista_interna LIKE 'LISTA %';
+
 /* LISTAS (ignorar ELECTORES, VOTANTES, EMPADRONADOS) */
 
 DELETE FROM listas;
@@ -40,20 +46,23 @@ INSERT INTO
   WHERE codigo_partido NOT IN (9001, 9002, 9007)  
   ORDER BY codigo_partido;
 
+/* ajustar posición listas especiales (voto en blanco, impugnados, nulos) */
+UPDATE listas SET idx_fila = id_lista WHERE id_lista >9000;
+
 /* CARGOS */
 
 DELETE FROM cargos;
 ALTER SEQUENCE cargos_id_cargo_seq RESTART 1; /* reinicio la secuencia autonumerica */
 INSERT INTO cargos (descripcion, descripcion_corta, idx_col) VALUES 
     ('Presidente', 'PR', 1),
---    ('Mercosur Nacional', 'MN', 2),
-    ('Senador Nacional', 'SN', 3),
-    ('Diputado Nacional', 'DN', 4),
---    ('Mercosur Regional', 'MR', 2),
-    ('Gobernador', 'GO', 5),
---    ('Senador Provincial', 'SP', 6),
---    ('Diputado Nacional', 'DP', 7),
-    ('Municipal', 'MU', 8)
+--    ('Mercosur Nacional', 'MN', 0),
+    ('Senador Nacional', 'SN', 2),
+    ('Diputado Nacional', 'DN', 3),
+--    ('Mercosur Regional', 'MR', 0),
+    ('Gobernador', 'GO', 4),
+    ('Senador Provincial', 'SP', 5),
+    ('Diputado Provincial', 'DP', 6),
+    ('Municipal', 'MU', 7)
     ;
     
 /* UBICACIONES -arbol jerarquico PAIS/PROVINCIA/DEPARTAMENTO-  */
@@ -152,6 +161,28 @@ INSERT INTO planillas_det (id_planilla, id_cargo, id_lista, votos_definitivos)
                               AND T.codigo_provincia = M.codigo_provincia
                        INNER JOIN planillas P ON P.id_ubicacion = M.id_ubicacion
                        INNER JOIN cargos C ON C.descripcion_corta = 'GO'
+                       INNER JOIN listas L ON L.id_lista = T.codigo_partido
+  ORDER BY P.id_ubicacion, T.codigo_partido;
+
+INSERT INTO planillas_det (id_planilla, id_cargo, id_lista, votos_definitivos)
+  SELECT P.id_planilla, C.id_cargo, L.id_lista, T.votos
+  FROM tmp.senadores_prov T INNER JOIN tmp.mesas M 
+                               ON T.codigo_mesa = M.codigo_mesa
+                              AND T.codigo_departamento = M.codigo_departamento
+                              AND T.codigo_provincia = M.codigo_provincia
+                       INNER JOIN planillas P ON P.id_ubicacion = M.id_ubicacion
+                       INNER JOIN cargos C ON C.descripcion_corta = 'SP'
+                       INNER JOIN listas L ON L.id_lista = T.codigo_partido
+  ORDER BY P.id_ubicacion, T.codigo_partido;
+
+INSERT INTO planillas_det (id_planilla, id_cargo, id_lista, votos_definitivos)
+  SELECT P.id_planilla, C.id_cargo, L.id_lista, T.votos
+  FROM tmp.diputados_prov T INNER JOIN tmp.mesas M 
+                               ON T.codigo_mesa = M.codigo_mesa
+                              AND T.codigo_departamento = M.codigo_departamento
+                              AND T.codigo_provincia = M.codigo_provincia
+                       INNER JOIN planillas P ON P.id_ubicacion = M.id_ubicacion
+                       INNER JOIN cargos C ON C.descripcion_corta = 'DP'
                        INNER JOIN listas L ON L.id_lista = T.codigo_partido
   ORDER BY P.id_ubicacion, T.codigo_partido;
 

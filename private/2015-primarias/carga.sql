@@ -175,6 +175,62 @@ COPY tmp.gobernador
     WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
 
 
+/* resultados para senadores prov.: crear tabla e importar datos publicos */
+
+CREATE TABLE tmp.senadores_prov (
+    codigo_provincia INTEGER REFERENCES tmp.provincias(codigo_provincia),
+    codigo_departamento INTEGER,
+    codigo_circuito VARCHAR(5),
+    codigo_mesa INTEGER,
+    ambito TEXT, -- nuevo!
+    codigo_partido INTEGER REFERENCES tmp.partidos(codigo_partido),
+    votos INTEGER NOT NULL CHECK (votos BETWEEN 0 AND 999),
+    PRIMARY KEY (codigo_provincia, codigo_departamento, codigo_mesa, codigo_partido),
+    FOREIGN KEY (codigo_provincia, codigo_departamento) 
+     REFERENCES tmp.departamentos(codigo_provincia, codigo_departamento)
+);
+
+COPY tmp.senadores_prov
+    FROM '/tmp/FMESSP_0202.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+
+COPY tmp.senadores_prov
+    FROM '/tmp/FMESSP_0313.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+COPY tmp.senadores_prov
+    FROM '/tmp/FMESSP_1424.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+/* resultados para diputados prov.: crear tabla e importar datos publicos */
+
+CREATE TABLE tmp.diputados_prov (
+    codigo_provincia INTEGER REFERENCES tmp.provincias(codigo_provincia),
+    codigo_departamento INTEGER,
+    codigo_circuito VARCHAR(6), /* 1008.0 */
+    codigo_mesa INTEGER,
+    ambito TEXT, -- nuevo!
+    codigo_partido INTEGER REFERENCES tmp.partidos(codigo_partido),
+    votos INTEGER NOT NULL CHECK (votos BETWEEN 0 AND 999),
+    PRIMARY KEY (codigo_provincia, codigo_departamento, codigo_mesa, codigo_partido),
+    FOREIGN KEY (codigo_provincia, codigo_departamento)
+     REFERENCES tmp.departamentos(codigo_provincia, codigo_departamento)
+);
+
+COPY tmp.diputados_prov
+    FROM '/tmp/FMESDP_0202.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+COPY tmp.diputados_prov
+    FROM '/tmp/FMESDP_0313.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+COPY tmp.diputados_prov
+    FROM '/tmp/FMESDP_1424.csv' 
+    WITH ( FORMAT CSV, HEADER, DELIMITER ';' );
+
+
 /* resultados municipales PBA: crear tabla e importar datos publicos */
 
 CREATE TABLE tmp.municipales (
@@ -201,12 +257,16 @@ UPDATE tmp.presidente SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') W
 UPDATE tmp.senadores SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
 UPDATE tmp.diputados SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
 UPDATE tmp.gobernador SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
+UPDATE tmp.senadores_prov SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
+UPDATE tmp.diputados_prov SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
 UPDATE tmp.municipales SET codigo_circuito = REPLACE(codigo_circuito, '.0', '') WHERE codigo_circuito LIKE '%\.%';
 
 UPDATE tmp.presidente SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
 UPDATE tmp.senadores SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
 UPDATE tmp.diputados SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
 UPDATE tmp.gobernador SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
+UPDATE tmp.senadores_prov SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
+UPDATE tmp.diputados_prov SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
 UPDATE tmp.municipales SET codigo_circuito = TRIM(LEADING '0' FROM codigo_circuito) WHERE codigo_circuito LIKE '0%';
 
 
@@ -220,6 +280,10 @@ CREATE OR REPLACE VIEW tmp.mesas_diputados AS
   SELECT DISTINCT codigo_provincia, codigo_departamento, codigo_circuito, codigo_mesa FROM tmp.diputados;
 CREATE OR REPLACE VIEW tmp.mesas_gobernador AS 
   SELECT DISTINCT codigo_provincia, codigo_departamento, codigo_circuito, codigo_mesa FROM tmp.gobernador;
+CREATE OR REPLACE VIEW tmp.mesas_senadores_prov AS 
+  SELECT DISTINCT codigo_provincia, codigo_departamento, codigo_circuito, codigo_mesa FROM tmp.senadores_prov;
+CREATE OR REPLACE VIEW tmp.mesas_diputados_prov AS 
+  SELECT DISTINCT codigo_provincia, codigo_departamento, codigo_circuito, codigo_mesa FROM tmp.diputados_prov;
 CREATE OR REPLACE VIEW tmp.mesas_municipales AS 
   SELECT DISTINCT codigo_provincia, codigo_departamento, codigo_circuito, codigo_mesa FROM tmp.municipales;
 
@@ -229,6 +293,8 @@ CREATE TABLE tmp.mesas AS
     SELECT * FROM tmp.mesas_diputados UNION 
     SELECT * FROM tmp.mesas_senadores UNION 
     SELECT * FROM tmp.mesas_gobernador UNION 
+    SELECT * FROM tmp.mesas_diputados_prov UNION 
+    SELECT * FROM tmp.mesas_senadores_prov UNION 
     SELECT * FROM tmp.mesas_municipales 
     ) C
   ORDER BY codigo_provincia, codigo_departamento, codigo_mesa;
