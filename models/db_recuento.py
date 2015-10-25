@@ -103,4 +103,12 @@ msa.define_table('dhont',
     Field('listas_sin_banca', type='string', length=30),
     migrate=migrate)
 
-
+msa.define_table('candidatos',
+    Field('id_ubicacion', type=msa.ubicaciones, ondelete='CASCADE'),
+    Field('id_cargo', type=msa.cargos, ondelete='CASCADE'),
+    Field('id_lista', type=msa.listas),
+    Field('nombre', type='text'),
+    Field('sexo', type='string', length=1),
+    Field('idx_fila', type='integer'),
+    Field('categoria', type='text'),
+    migrate=True)
